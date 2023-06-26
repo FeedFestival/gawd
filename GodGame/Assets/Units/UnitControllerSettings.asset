@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd53cafb98508af468fd2ce02ee1f6ca, type: 3}
+  m_Name: UnitControllerSettings
+  m_EditorClassIdentifier: 
+  HexFadedPrefab: {fileID: 3734737331627701078, guid: 6bd268fff8789a647b31a420d2abc1d6,
+    type: 3}
+  HexEdgePrefab: {fileID: 4974763094784367811, guid: 170d730aa9a8faa4e9380686a0c214a4,
+    type: 3}
+  PathDotPrefab: {fileID: 1757840890185383539, guid: 095989e23706c9c4f998ebb55cd62827,
+    type: 3}

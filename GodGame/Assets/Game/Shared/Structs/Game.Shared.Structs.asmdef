@@ -1,0 +1,16 @@
+{
+    "name": "Game.Shared.Structs",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c6622b6f6100f804aafb6e599865eac9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
