@@ -1,16 +1,6 @@
-using System.Linq;
-//using Tarodev_Pathfinding._Scripts.Grid;
 using UnityEngine;
 
-//namespace _Scripts.Tiles {
-//    public class HexNode : NodeBase {
-//        public override void CacheNeighbors() {
-//            Neighbors = GridManager.Instance.Tiles.Where(t => Coords.GetDistance(t.Value.Coords) == 1).Select(t=>t.Value).ToList();
-//        }
-//    }
-//}
-
-namespace Game.Shared.DataModels
+namespace Game.UnitController
 {
 
     public struct HexCoords : ICoords

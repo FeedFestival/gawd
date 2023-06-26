@@ -9,7 +9,7 @@ public class HexPathTests
     public void TestDirectionDown()
     {
         var startCoord = new Hex.Coord(5, 7);
-        var controllerPathRef = new ControllerPath();
+        var pathfinding = new Pathfinding();
 
         var expected = new List<Hex.Coord>()
         {
@@ -24,12 +24,12 @@ public class HexPathTests
             new Hex.Coord(-1, 0),
         };
 
-        var path = controllerPathRef.FormatPath(givenPath, startCoord);
+        var path = pathfinding.FormatPath(givenPath, startCoord);
         Assert.AreEqual(expected, path);
 
-        controllerPathRef.ApplyPathToWorld(path);
+        pathfinding.ApplyPathToWorld(path);
 
-        //controllerPathRef.ResetPathfindingVariables();
+        //pathfinding.ResetPathfindingVariables();
 
         expected = new List<Hex.Coord>()
         {
@@ -44,7 +44,7 @@ public class HexPathTests
             new Hex.Coord(1, 1),
         };
 
-        path = controllerPathRef.FormatPath(givenPath, startCoord);
+        path = pathfinding.FormatPath(givenPath, startCoord);
         Assert.AreEqual(expected, path);
 
         // Use the Assert class to test conditions

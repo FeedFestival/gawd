@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.Shared.DataModels
+namespace Game.UnitController
 {
     public class MoveHex : MonoBehaviour//, IHexCoord
     {

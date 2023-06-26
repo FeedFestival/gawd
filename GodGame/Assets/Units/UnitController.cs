@@ -3,7 +3,6 @@ using Game.Shared.DataModels;
 using Game.Shared.Utils;
 using System;
 using System.Collections.Generic;
-using Tarodev_Pathfinding._Scripts;
 using UniRx;
 using UnityEngine;
 
@@ -18,7 +17,7 @@ namespace Game.UnitController
         private CameraController _cameraController;
         private Subject<int> _showAvailablePathSubject__s = new Subject<int>();
 
-        private ControllerPath _controllerPathRef;
+        private Pathfinding _pathfinding;
 
         private List<GameObject> _pathDots;
         private int _requestPathY;
@@ -34,15 +33,15 @@ namespace Game.UnitController
             _moveSubject__s
                 .Do((int i) =>
                 {
-                    var pos = HexUtils.GetHexPosition(_controllerPathRef.Path[i]);
+                    var pos = HexUtils.GetHexPosition(_pathfinding.Path[i]);
                     _currentUnit.transform.DOMove(pos, MOVE_DURATION).SetEase(Ease.Linear);
                 })
                 .Delay(TimeSpan.FromSeconds(MOVE_DURATION))
                 .Subscribe((int i) =>
                 {
-                    if (i == _controllerPathRef.Path.Count - 1)
+                    if (i == _pathfinding.Path.Count - 1)
                     {
-                        _currentUnit.Coord = _controllerPathRef.To;
+                        _currentUnit.Coord = _pathfinding.To;
 
                         ContinueTurn();
                         return;
@@ -54,14 +53,14 @@ namespace Game.UnitController
             _showAvailablePathSubject__s
                 .Select((int _currentEnergy) =>
                 {
-                    var moveHexesMaxMoves = HexUtils.GetRangeByHexCount(_controllerPathRef.MoveHexes.Count());
+                    var moveHexesMaxMoves = HexUtils.GetRangeByHexCount(_pathfinding.MoveHexes.Count());
                     var isEnough = moveHexesMaxMoves == _currentEnergy;
                     if (isEnough == false)
                     {
-                        _controllerPathRef.ShouldSeeCountBasedOnEnergy = HexUtils.GetHexCountByRange(_currentEnergy);
+                        _pathfinding.ShouldSeeCountBasedOnEnergy = HexUtils.GetHexCountByRange(_currentEnergy);
                         if (moveHexesMaxMoves == 0)
                         {
-                            createMoveHexes(_controllerPathRef.ShouldSeeCountBasedOnEnergy);
+                            createMoveHexes(_pathfinding.ShouldSeeCountBasedOnEnergy);
                             return true;
                         }
                         else
@@ -69,16 +68,16 @@ namespace Game.UnitController
                             var currentHexCount = HexUtils.GetHexCountByRange(moveHexesMaxMoves);
                             Debug.Log("currentHexCount: " + currentHexCount);
 
-                            if (_controllerPathRef.ShouldSeeCountBasedOnEnergy > currentHexCount)
+                            if (_pathfinding.ShouldSeeCountBasedOnEnergy > currentHexCount)
                             {
-                                var shouldAddCount = _controllerPathRef.ShouldSeeCountBasedOnEnergy - currentHexCount;
+                                var shouldAddCount = _pathfinding.ShouldSeeCountBasedOnEnergy - currentHexCount;
                                 Debug.Log("shouldAddCount: " + shouldAddCount);
 
-                                // add more hexes using _controllerPathRef.MoveHexesEdge
+                                // add more hexes using _pathfinding.MoveHexesEdge
                             }
                             else
                             {
-                                _controllerPathRef.disableExtraHexes(currentHexCount);
+                                _pathfinding.disableExtraHexes(currentHexCount);
                             }
                         }
                     }
@@ -93,14 +92,14 @@ namespace Game.UnitController
                 .DelayFrame(10)
                 .Do((bool createdAnew) =>
                 {
-                    _controllerPathRef.ShowAvailableMoveHexes();
+                    _pathfinding.ShowAvailableMoveHexes();
                 })
                 .Subscribe();
         }
 
         public void PreSetup()
         {
-            _controllerPathRef = new ControllerPath();
+            _pathfinding = new Pathfinding();
 
             _cameraController = Camera.main.GetComponent<CameraController>();
         }
@@ -113,13 +112,13 @@ namespace Game.UnitController
         public void StartTurn(UnitComponent unitComponent)
         {
             _currentUnit = unitComponent;
-            _controllerPathRef.ResetPathfindingVariables();
+            _pathfinding.ResetPathfindingVariables();
             _cameraController.FocusOnUnit(_currentUnit.transform.position);
 
-            if (_controllerPathRef.AllHexes[0].IsInitialized == false)
+            if (_pathfinding.AllHexes[0].IsInitialized == false)
             {
-                _controllerPathRef.AllHexes[0].IsInitialized = true;
-                _controllerPathRef.AllHexes[0].transform.position = _currentUnit.transform.position;
+                _pathfinding.AllHexes[0].IsInitialized = true;
+                _pathfinding.AllHexes[0].transform.position = _currentUnit.transform.position;
             }
 
             _showAvailablePathSubject__s.OnNext(_currentUnit.CurrentEnergy);
@@ -129,11 +128,11 @@ namespace Game.UnitController
         {
             if (_currentUnit.CurrentEnergy == 0)
             {
-                _controllerPathRef.HideHexPath();
+                _pathfinding.HideHexPath();
                 return;
             }
 
-            _controllerPathRef.ShowHexPath();
+            _pathfinding.ShowHexPath();
             _showAvailablePathSubject__s.OnNext(_currentUnit.CurrentEnergy);
         }
 
@@ -143,7 +142,7 @@ namespace Game.UnitController
 
             _requestPathY = y;
             _requestPathX = x;
-            var path = Pathfinding.FindPath(_controllerPathRef.MoveHexes[0][0], _controllerPathRef.MoveHexes[y][x], ref _controllerPathRef.MoveHexes);
+            var path = Pathfinding.FindPath(_pathfinding.MoveHexes[0][0], _pathfinding.MoveHexes[y][x], ref _pathfinding.MoveHexes);
 
             preparePathDots(path.Count);
             showPath(path);
@@ -151,24 +150,24 @@ namespace Game.UnitController
 
         private void confirmDestination(int y, int x)
         {
-            var path = Pathfinding.FindPath(_controllerPathRef.MoveHexes[0][0], _controllerPathRef.MoveHexes[y][x], ref _controllerPathRef.MoveHexes);
+            var path = Pathfinding.FindPath(_pathfinding.MoveHexes[0][0], _pathfinding.MoveHexes[y][x], ref _pathfinding.MoveHexes);
             foreach (var p in path)
             {
                 Debug.Log(p);
             }
             Debug.Log("--------------------: ");
-            path = _controllerPathRef.FormatPath(path, _currentUnit.Coord);
+            path = _pathfinding.FormatPath(path, _currentUnit.Coord);
             foreach (var p in path)
             {
                 Debug.Log(p);
             }
             Debug.Log("--------------------: ");
-            _controllerPathRef.ApplyPathToWorld(path);
+            _pathfinding.ApplyPathToWorld(path);
 
             hidePathDots();
-            _controllerPathRef.HideHexPath();
+            _pathfinding.HideHexPath();
 
-            _currentUnit.UseEnergy(_controllerPathRef.Path.Count);
+            _currentUnit.UseEnergy(_pathfinding.Path.Count);
 
             _moveSubject__s.OnNext(0);
         }
@@ -186,21 +185,21 @@ namespace Game.UnitController
             var moveHex = createMoveHex(0, 0);
             moveHex.transform.position = HexUtils.GetHexPosition(COORD_ZERO);
 
-            _controllerPathRef.AllHexes.Add(moveHex);
-            _controllerPathRef.MoveHexes.AddMoveHex(moveHex);
-            _controllerPathRef.CurBuildCoord = COORD_ZERO;
+            _pathfinding.AllHexes.Add(moveHex);
+            _pathfinding.MoveHexes.AddMoveHex(moveHex);
+            _pathfinding.CurBuildCoord = COORD_ZERO;
         }
 
         private void createMoveHexes(int hexCount)
         {
             for (int i = 0; i < hexCount - 1; i++)
             {
-                var curMoveHex = _controllerPathRef.MoveHexes.GetAtCoord(_controllerPathRef.CurBuildCoord);
+                var curMoveHex = _pathfinding.MoveHexes.GetAtCoord(_pathfinding.CurBuildCoord);
 
                 var hasAllNeighbors = curMoveHex.Neighbors.Count == 6;
                 if (hasAllNeighbors)
                 {
-                    _controllerPathRef.CurBuildCoord = _controllerPathRef.MoveHexesEdge.GetEdgeCoord(ref _controllerPathRef.MoveHexes);
+                    _pathfinding.CurBuildCoord = _pathfinding.MoveHexesEdge.GetEdgeCoord(ref _pathfinding.MoveHexes);
                     i--;
                     continue;
                 }
@@ -209,20 +208,20 @@ namespace Game.UnitController
 
                 var isOddRow = HexUtils.IsOddRow(curMoveHex.Y);
                 var offset = HexUtils.GetCoordOffset(isOddRow, dir);
-                var newNeighborCoord = offset.Plus(_controllerPathRef.CurBuildCoord);
+                var newNeighborCoord = offset.Plus(_pathfinding.CurBuildCoord);
 
                 var moveHex = createMoveHex(newNeighborCoord);
                 moveHex.RequestPath += requestPath;
                 moveHex.ConfirmDestination += confirmDestination;
                 moveHex.transform.position = getPathfindingPos(newNeighborCoord);
 
-                _controllerPathRef.AllHexes.Add(moveHex);
-                _controllerPathRef.MoveHexes.AddMoveHex(moveHex);
-                _controllerPathRef.MoveHexesEdge.Enqueue(newNeighborCoord);
+                _pathfinding.AllHexes.Add(moveHex);
+                _pathfinding.MoveHexes.AddMoveHex(moveHex);
+                _pathfinding.MoveHexesEdge.Enqueue(newNeighborCoord);
 
                 curMoveHex.Neighbors.Add(dir, newNeighborCoord);
-                _controllerPathRef.MoveHexes[newNeighborCoord.Y][newNeighborCoord.X].Neighbors
-                    .AddMultipleNeighbors(_controllerPathRef.CurBuildCoord, dir, ref _controllerPathRef.MoveHexes);
+                _pathfinding.MoveHexes[newNeighborCoord.Y][newNeighborCoord.X].Neighbors
+                    .AddMultipleNeighbors(_pathfinding.CurBuildCoord, dir, ref _pathfinding.MoveHexes);
             }
         }
 
@@ -230,21 +229,21 @@ namespace Game.UnitController
         {
             Vector3 oldPos = Vector3.zero, newPos = Vector3.zero;
 
-            var isNewTurn = _controllerPathRef.From == null;
+            var isNewTurn = _pathfinding.From == null;
             if (isNewTurn)
             {
-                oldPos = _controllerPathRef.AllHexes[0].transform.position;
+                oldPos = _pathfinding.AllHexes[0].transform.position;
                 newPos = HexUtils.GetHexPosition(_currentUnit.Coord);
             }
             else
             {
-                oldPos = HexUtils.GetHexPosition(_controllerPathRef.From);
-                newPos = HexUtils.GetHexPosition(_controllerPathRef.To);
+                oldPos = HexUtils.GetHexPosition(_pathfinding.From);
+                newPos = HexUtils.GetHexPosition(_pathfinding.To);
             }
             var offset = newPos - oldPos;
             Debug.Log("offset: " + offset);
 
-            foreach (var hex in _controllerPathRef.AllHexes)
+            foreach (var hex in _pathfinding.AllHexes)
             {
                 hex.transform.position = hex.transform.position + offset;
             }

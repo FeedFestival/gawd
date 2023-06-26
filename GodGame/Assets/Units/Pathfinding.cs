@@ -1,12 +1,14 @@
 using Game.Shared.DataModels;
 using Game.Shared.Enums;
 using Game.Shared.Utils;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Game.UnitController
 {
-    public class ControllerPath
+    public class Pathfinding
     {
         public List<MoveHex> AllHexes;
         public Dictionary<int, Dictionary<int, MoveHex>> MoveHexes;
@@ -19,11 +21,87 @@ namespace Game.UnitController
 
         public int ShouldSeeCountBasedOnEnergy { get; internal set; }
 
-        public ControllerPath()
+        public Pathfinding()
         {
             AllHexes = new List<MoveHex>();
             MoveHexes = new Dictionary<int, Dictionary<int, MoveHex>>();
             MoveHexesEdge = new Queue<Hex.Coord>();
+        }
+
+        /// <summary>
+        /// This algorithm is written for readability. Although it would be perfectly fine in 80% of games, please
+        /// don't use this in an RTS without first applying some optimization mentioned in the video: https://youtu.be/i0x5fj4PqP4
+        /// If you enjoyed the explanation, be sure to subscribe!
+        ///
+        /// Also, setting colors and text on each hex affects performance, so removing that will also improve it marginally.
+        /// </summary>
+        public static List<Hex.Coord> FindPath(MoveHex startNode, MoveHex targetNode, ref Dictionary<int, Dictionary<int, MoveHex>> moveHexes)
+        {
+            var toSearch = new List<MoveHex>() { startNode };
+            var processed = new List<MoveHex>();
+
+            while (toSearch.Any())
+            {
+
+                var current = toSearch[0];
+                foreach (var t in toSearch)
+                {
+                    if (t.F < current.F || t.F == current.F && t.H < current.H)
+                    {
+                        current = t;
+                    }
+                }
+
+                processed.Add(current);
+                toSearch.Remove(current);
+
+                if (current == targetNode)
+                {
+                    var currentPathTile = targetNode;
+                    var path = new List<Hex.Coord>();
+                    var count = 100;
+                    while (currentPathTile != startNode)
+                    {
+                        path.Add(new Hex.Coord(currentPathTile.Y, currentPathTile.X));
+                        currentPathTile = currentPathTile.Connection;
+                        count--;
+                        if (count < 0) throw new Exception();
+                    }
+                    return path;
+                }
+
+                var moveHexNeighbors = new List<MoveHex>();
+                foreach (var neighbor in current.Neighbors)
+                {
+                    var moveHexNeighbor = moveHexes[neighbor.Value.Y][neighbor.Value.X];
+                    var isWalkable = moveHexNeighbor.Walkable;
+                    var isNotProcessed = !processed.Contains(moveHexNeighbor);
+                    if (isWalkable && isNotProcessed)
+                    {
+                        moveHexNeighbors.Add(moveHexNeighbor);
+                    }
+                }
+
+                foreach (var neighbor in moveHexNeighbors)
+                {
+                    var inSearch = toSearch.Contains(neighbor);
+
+                    var costToNeighbor = current.G + current.GetDistance(neighbor);
+
+                    if (!inSearch || costToNeighbor < neighbor.G)
+                    {
+                        neighbor.SetG(costToNeighbor);
+                        neighbor.SetConnection(current);
+
+                        if (!inSearch)
+                        {
+                            neighbor.SetH(neighbor.GetDistance(targetNode));
+                            toSearch.Add(neighbor);
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         internal void HideHexPath()

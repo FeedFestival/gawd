@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Game.Shared.DataModels
+namespace Game.UnitController
 {
     public interface ICoords
     {
