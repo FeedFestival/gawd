@@ -22,7 +22,7 @@ namespace Game.WorldBuilder
         private HexDebug _hexDebug;
 
         public Dictionary<Dir, Bridge> Bridges;
-        public Dictionary<EdgeDir, bool> BridgeEdges;
+        public Dictionary<EdgeDir, bool> EdgeStitches;
 
         public void Init(IHex hex)
         {
@@ -33,7 +33,7 @@ namespace Game.WorldBuilder
             Version = 0;
 
             Bridges = new Dictionary<Dir, Bridge>();
-            BridgeEdges = new Dictionary<EdgeDir, bool>();
+            EdgeStitches = new Dictionary<EdgeDir, bool>();
             //BridgeSettings = new Dictionary<CoordDir, RenderSettings>();
             //EdgeSettings = new Dictionary<EdgeCoordDir, Dictionary<EdgeSide, RenderSettings>>();
         }

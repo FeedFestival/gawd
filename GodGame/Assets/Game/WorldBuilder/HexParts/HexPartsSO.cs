@@ -13,21 +13,19 @@ namespace Game.WorldBuilder
 
         public List<HexPlane> HexPlanes;
         public List<Bridge> Bridges;
-        public List<GameObject> BridgeEdgesGos;
+
+        public List<GameObject> EdgeStitchGos;
         [HideInInspector]
-        public List<BridgeEdge> BridgeEdges;
+        public List<EdgeStitch> EdgeStitches;
 
         public void Init()
         {
-            BridgeEdges = new List<BridgeEdge>();
-
-            foreach (var beGo in BridgeEdgesGos)
+            EdgeStitches = new List<EdgeStitch>();
+            foreach (var beGo in EdgeStitchGos)
             {
-                Debug.Log("beGo.name: " + beGo.name);
-
-                var bridgeEdge = new BridgeEdge(beGo);
-                Debug.Log("bridgeEdge: " + bridgeEdge.ToString());
-                BridgeEdges.Add(bridgeEdge);
+                var edgeStitch = new EdgeStitch(beGo);
+                Debug.Log(beGo.name + " = edgeStitch: " + edgeStitch.ToString());
+                EdgeStitches.Add(edgeStitch);
             }
         }
 
@@ -46,23 +44,26 @@ namespace Game.WorldBuilder
             return GetBridge(bridge.SlopeDir, bridge.Version, bridge.Elevation);
         }
 
-        public BridgeEdge GetBridgeEdge(
-            Adjacent adjacent,
-            SlopeDir slopeDir, int elevation,
-            int bridgeVersion,
+        public EdgeStitch GetEdgeStitch(
+            StitchElevation stitchElevation,
             int planeVersion,
-            SlopeDir otherEdge_SlopeDir, int otherEdge_Elevation,
-            int otherBridgeEdge_Version
+            int leftBridgeVersion,
+            int leftPlaneVersion,
+            int oppositeBridgeVersion,
+            int rightPlaneVersion,
+            int rightBridgeVersion,
+            int version
         )
         {
-            return BridgeEdges.Find(be =>
-                be.Adjacent == adjacent
-                && be.SlopeDir == slopeDir && be.Elevation == elevation
-                && be.BridgeVersion == bridgeVersion
+            return EdgeStitches.Find(be =>
+                be.StitchElevation.AreEqual(stitchElevation)
                 && be.PlaneVersion == planeVersion
-                && be.OtherEdge_SlopeDir == otherEdge_SlopeDir && be.OtherEdge_Elevation == otherEdge_Elevation
-                && be.OtherBridgeEdge_Version == otherBridgeEdge_Version
-                && be.Version == 0
+                && be.LeftBridgeVersion == leftBridgeVersion
+                && be.LeftPlaneVersion == leftPlaneVersion
+                && be.OppositeBridgeVersion == oppositeBridgeVersion
+                && be.RightPlaneVersion == rightPlaneVersion
+                && be.RightBridgeVersion == rightBridgeVersion
+                && be.Version == version
             );
         }
     }

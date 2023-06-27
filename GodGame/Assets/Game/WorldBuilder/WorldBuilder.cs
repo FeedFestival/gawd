@@ -6,6 +6,7 @@ using Game.Shared.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UniRx;
 using UnityEngine;
 using static Game.Shared.Structs.HexPartsStructs;
@@ -24,8 +25,13 @@ namespace Game.WorldBuilder
         public Queue<ICoord> OnEdgeHexes;
         private ICoord _curBuildCoord;
         private int _currentBuilderHexId = 0;
+        private List<ICoord> _justAdded;
 
         private Subject<int> _discoverAdjacent__s = new Subject<int>();
+        private Subject<int> _buildAdjacentBridges__s = new Subject<int>();
+        private Subject<int> _buildAdjacentEdges__s = new Subject<int>();
+
+        private int _frameDelay = 10;
 
         public void PreSetup()
         {
@@ -34,69 +40,47 @@ namespace Game.WorldBuilder
             _curBuildCoord = MiddleCoord;
             Hexes = new Dictionary<int, Dictionary<int, IHex>>();
             OnEdgeHexes = new Queue<ICoord>();
+            _justAdded = new List<ICoord>();
 
             HexParts.Init();
 
+            _buildAdjacentBridges__s
+                //.DelayFrame(_frameDelay)
+                .Do(i =>
+                {
+                    buildBridges(Hexes[_justAdded[i].Y][_justAdded[i].X]);
+
+                    i++;
+                    if (i == _justAdded.Count)
+                    {
+                        _buildAdjacentEdges__s.OnNext(0);
+                        return;
+                    }
+
+                    _buildAdjacentBridges__s.OnNext(i);
+                })
+                .Subscribe();
+
+            _buildAdjacentEdges__s
+                .DelayFrame(_frameDelay)
+                .Do(i =>
+                {
+                    buildEdges(Hexes[_justAdded[i].Y][_justAdded[i].X]);
+
+                    i++;
+                    if (i == _justAdded.Count)
+                    {
+                        return;
+                    }
+
+                    _buildAdjacentEdges__s.OnNext(i);
+                })
+                .Subscribe();
+
             _discoverAdjacent__s
-                .Do((int hexCount) =>
-                {
-                    for (int i = 0; i < hexCount - 1; i++)
-                    {
-                        var hex = Hexes.GetAtCoord(_curBuildCoord);
-
-                        var hasAllNeighbors = hex.Neighbors.Count == 6;
-                        if (hasAllNeighbors)
-                        {
-                            _curBuildCoord = OnEdgeHexes.GetEdgeCoord(ref Hexes);
-                            i--;
-                            continue;
-                        }
-
-                        var dir = hex.Neighbors.GetMissingNeighbor();
-
-                        var isOddRow = HexUtils.IsOddRow(hex.Y);
-                        var offset = HexUtils.GetCoordOffset(isOddRow, dir);
-                        var newNeighborCoord = Coord.AddTogheter(offset, _curBuildCoord);
-                        Debug.Log("newNeighborCoord: " + newNeighborCoord);
-
-                        _currentBuilderHexId++;
-                        var newHex = new Hex(_currentBuilderHexId, newNeighborCoord.Y, newNeighborCoord.X);
-                        Hexes.AddHex(newHex);
-                        OnEdgeHexes.Enqueue(new Coord(newHex.Y, newHex.X));
-
-                        placeHexOnBoard(newHex);
-
-                        hex.AddNeighbor(dir, newNeighborCoord, _currentBuilderHexId);
-                        addMultipleNeighbors(_curBuildCoord, dir, Hexes[newNeighborCoord.Y][newNeighborCoord.X], ref Hexes);
-
-                        //Debug.Log("_moveHexes[" + newNeighborCoord.Y + "][" + newNeighborCoord.X + "].Neighbors: " + _moveHexes[newNeighborCoord.Y][newNeighborCoord.X].Neighbors.ToStringDebug());
-                    }
-                })
-                .DelayFrame(60)
-                .Do(_ =>
-                {
-
-                    foreach (var hexY in Hexes)
-                    {
-                        foreach (var hexX in hexY.Value)
-                        {
-                            buildBridges(hexX.Value);
-                        }
-                    }
-                })
-                .DelayFrame(60)
-                .Do(_ =>
-                {
-
-                    foreach (var hexY in Hexes)
-                    {
-                        foreach (var hexX in hexY.Value)
-                        {
-                            // needs rework with EdgeStitch solution
-                            //buildEdges(hexX.Value);
-                        }
-                    }
-                })
+                .Do((int hexCount) => discoverAdjacent(hexCount))
+                .DelayFrame(_frameDelay)
+                .Do(_ => _buildAdjacentBridges__s.OnNext(0))
                 .Subscribe();
         }
 
@@ -104,7 +88,7 @@ namespace Game.WorldBuilder
         {
             createFirstHex();
 
-            //calculateCombinationsForEdgeStitch();
+            calculateCombinationsForEdgeStitch();
         }
 
         public void DiscoverWorld(int visionRange)
@@ -113,14 +97,51 @@ namespace Game.WorldBuilder
             _discoverAdjacent__s.OnNext(hexCount);
         }
 
-        public static void addMultipleNeighbors(ICoord curCoord, Dir dir, IHex hex, ref Dictionary<int, Dictionary<int, IHex>> hexes)
+        private void discoverAdjacent(int hexCount)
+        {
+            for (int i = 0; i < hexCount - 1; i++)
+            {
+                var hex = Hexes.GetAtCoord(_curBuildCoord);
+
+                var hasAllNeighbors = hex.Neighbors.Count == 6;
+                if (hasAllNeighbors)
+                {
+                    _curBuildCoord = OnEdgeHexes.GetEdgeCoord(ref Hexes);
+                    i--;
+                    continue;
+                }
+
+                var dir = hex.Neighbors.GetMissingNeighbor();
+
+                var isOddRow = HexUtils.IsOddRow(hex.Y);
+                var offset = HexUtils.GetCoordOffset(isOddRow, dir);
+                var newNeighborCoord = Coord.AddTogheter(offset, _curBuildCoord);
+
+                _currentBuilderHexId++;
+                var newHex = new Hex(_currentBuilderHexId, newNeighborCoord.Y, newNeighborCoord.X, _currentBuilderHexId == 2 ? 1 : 0);
+                Hexes.AddHex(newHex);
+                //OnEdgeHexes.Enqueue(new Coord(newHex.Y, newHex.X));
+                OnEdgeHexes.Enqueue(newNeighborCoord);
+
+                placeHexOnBoard(newHex);
+
+                hex.AddNeighbor(dir, newNeighborCoord, _currentBuilderHexId);
+                addMultipleNeighbors(_curBuildCoord, dir, Hexes[newNeighborCoord.Y][newNeighborCoord.X], ref Hexes);
+
+                _justAdded.Add(newNeighborCoord);
+
+                //Debug.Log("_moveHexes[" + newNeighborCoord.Y + "][" + newNeighborCoord.X + "].Neighbors: " + _moveHexes[newNeighborCoord.Y][newNeighborCoord.X].Neighbors.ToStringDebug());
+            }
+        }
+
+        private void addMultipleNeighbors(ICoord curCoord, Dir dir, IHex hex, ref Dictionary<int, Dictionary<int, IHex>> hexes)
         {
             var isOddRow = HexUtils.IsOddRow(curCoord.Y);
             var neighborAdjacentCoords = isOddRow
                 ? HexUtils.ODD__NEIGHBORS_COORDS_OF_DIR[dir]
                 : HexUtils.EVEN_NEIGHBORS_COORDS_OF_DIR[dir];
 
-            var neighborDirCoord = neighborAdjacentCoords[(int)DirAdjacent.Center];
+            var neighborDirCoord = neighborAdjacentCoords[(int)DirWay.Left];
             var dirCoord = neighborDirCoord.Coord.Plus(curCoord);
             bool exists = hexes.HexExist(dirCoord);
             if (exists)
@@ -128,7 +149,7 @@ namespace Game.WorldBuilder
                 hex.AddNeighbor(neighborDirCoord.PerspectiveDir, curCoord, hexes.GetAtCoord(curCoord).ID);
             }
 
-            neighborDirCoord = neighborAdjacentCoords[(int)DirAdjacent.Left];
+            neighborDirCoord = neighborAdjacentCoords[(int)DirWay.Origin];
             var coord = neighborDirCoord.Coord.Plus(curCoord);
             exists = hexes.HexExist(coord);
             if (exists)
@@ -138,7 +159,7 @@ namespace Game.WorldBuilder
                 hexes[coord.Y][coord.X].AddNeighbor(oppositeDir, dirCoord, hex.ID);
             }
 
-            neighborDirCoord = neighborAdjacentCoords[(int)DirAdjacent.Right];
+            neighborDirCoord = neighborAdjacentCoords[(int)DirWay.Right];
             coord = neighborDirCoord.Coord.Plus(curCoord);
             exists = hexes.HexExist(coord);
             if (exists)
@@ -205,50 +226,78 @@ namespace Game.WorldBuilder
             }
         }
 
-        private void buildEdges(IHex hex)
+        private void buildEdges(IHex currentHex)
         {
             foreach (var edgeDir in HexUtils.EDGE_DIRECTIONS)
             {
-                var originHexComponent = hex.HexComponent as HexComponent;
-                var hasBridgeEdge = originHexComponent.BridgeEdges.ContainsKey(edgeDir);
+                if (currentHex.ID == 2 && edgeDir == EdgeDir.S)
+                {
+                    var x = 0;
+                }
 
-                if (hasBridgeEdge) { continue; }
+                var hex = new Dictionary<DirWay, (IHex hex, HexComponent component, EdgeDir edgeDir)>();
+                hex.Add(DirWay.Origin, getHexTuple(currentHex, edgeDir));
 
-                var originBridgeEdgeProps = getBridgeEdgeProperties(originHexComponent, edgeDir);
+                var hasEdgeStitch = hex[DirWay.Origin].component.EdgeStitches.ContainsKey(edgeDir);
+                //Debug.Log("[" + currentHex.Y + ", " + currentHex.X + "] - " + edgeDir + " - hasEdgeStitch: " + hasEdgeStitch);
+                if (hasEdgeStitch) { continue; }
 
-                if (!originBridgeEdgeProps.hasLeftBridge) { continue; }
+                var originEdgeStitchProps = getEdgeStitchProperties(hex[DirWay.Origin].component, edgeDir);
+                if (!originEdgeStitchProps.hasLeftBridge) { continue; }
 
-                var leftNeighborHex = Hexes.GetAtCoord(hex.Neighbors[originBridgeEdgeProps.lDir]);
-                var leftNeighborHexComponent = leftNeighborHex.HexComponent as HexComponent;
-                var leftNeighborEdgeDir = HexUtils.LEFT_OPPOSITE_EDGE_DIR[edgeDir];
+                hex.Add(DirWay.Left, getHexTuple(
+                    Hexes.GetAtCoord(hex[DirWay.Origin].hex.Neighbors[originEdgeStitchProps.lDir]),
+                    HexUtils.LEFT_OPPOSITE_EDGE_DIR[edgeDir]
+                ));
 
-                var leftBridgeEdgeProperties = getBridgeEdgeProperties(leftNeighborHexComponent, leftNeighborEdgeDir);
+                var leftEdgeStitchProps = getEdgeStitchProperties(hex[DirWay.Left].component, hex[DirWay.Left].edgeDir);
+                if (!leftEdgeStitchProps.hasLeftBridge) { continue; }
 
-                if (!leftBridgeEdgeProperties.hasLeftBridge) { continue; }
+                hex.Add(DirWay.Right, getHexTuple(
+                    Hexes.GetAtCoord(hex[DirWay.Left].hex.Neighbors[leftEdgeStitchProps.lDir]),
+                    HexUtils.LEFT_OPPOSITE_EDGE_DIR[hex[DirWay.Left].edgeDir]
+                ));
 
-                var rightNeighborHex = Hexes.GetAtCoord(leftNeighborHex.Neighbors[leftBridgeEdgeProperties.lDir]);
-                var rightNeighborHexComponent = rightNeighborHex.HexComponent as HexComponent;
-                var rightNeighborEdgeDir = HexUtils.LEFT_OPPOSITE_EDGE_DIR[leftNeighborEdgeDir];
+                var rightEdgeStitchProps = getEdgeStitchProperties(hex[DirWay.Right].component, hex[DirWay.Right].edgeDir);
+                if (!rightEdgeStitchProps.hasLeftBridge) { continue; }
 
-                var rightBridgeEdgeProperties = getBridgeEdgeProperties(rightNeighborHexComponent, rightNeighborEdgeDir);
+                // if we get here then we have a Bbridge Whole and can create a Stitch
 
-                if (!rightBridgeEdgeProperties.hasLeftBridge) { continue; }
+                var combination = new int[3] { hex[DirWay.Origin].hex.Elevation, hex[DirWay.Left].hex.Elevation, hex[DirWay.Right].hex.Elevation };
+                var lowestDirWay = StitchElevation.GetMinIndex(combination);
+                var yPos = hex[lowestDirWay].component.Transform.position.y;
+                var defaultCombination = StitchElevation.GetDefaultCombination(combination);
+                var rotationCount = StitchElevation.GetRotation(combination, defaultCombination);
 
-                // if we get here then we have a bridgeWhole and can create the edge bridges
+                var version = 0;
 
-                var planeVersion = originHexComponent.Version;
+                placeEdgeStitchOnBoard(hex[DirWay.Origin].component, edgeDir, rotationCount, yPos,
+                    stitchElevation: new StitchElevation(defaultCombination),
+                    planeVersion: hex[DirWay.Origin].component.Version,
+                    leftBridgeVersion: hex[DirWay.Origin].component.Bridges[originEdgeStitchProps.lDir].Version,
+                    leftPlaneVersion: hex[DirWay.Left].component.Version,
+                    oppositeBridgeVersion: hex[DirWay.Left].component.Bridges[leftEdgeStitchProps.lDir].Version, // not sure if this points to the correct one
+                    rightPlaneVersion: hex[DirWay.Right].component.Version,
+                    rightBridgeVersion: hex[DirWay.Origin].component.Bridges[originEdgeStitchProps.rDir].Version,
+                    version
+                );
 
-                var leftBridge = originHexComponent.Bridges[originBridgeEdgeProps.lDir];
-                var rightBridge = originHexComponent.Bridges[originBridgeEdgeProps.rDir];
-
-                placeBridgeEdgeOnBoard(Adjacent.Left, planeVersion, leftBridge, originHexComponent, edgeDir, originBridgeEdgeProps.lDir, rightBridge);
-                placeBridgeEdgeOnBoard(Adjacent.Right, planeVersion, rightBridge, originHexComponent, edgeDir, originBridgeEdgeProps.rDir, leftBridge);
-
-                originHexComponent.BridgeEdges.Add(edgeDir, true);
+                hex[DirWay.Origin].component.EdgeStitches.Add(edgeDir, true);
+                hex[DirWay.Left].component.EdgeStitches.Add(hex[DirWay.Left].edgeDir, true);
+                hex[DirWay.Right].component.EdgeStitches.Add(hex[DirWay.Right].edgeDir, true);
             }
         }
 
-        private (Dictionary<Adjacent, Dir> adjacentDirs, Dir lDir, Dir rDir, bool hasLeftBridge) getBridgeEdgeProperties(HexComponent hexComponent, EdgeDir edgeDir)
+        private (IHex hex, HexComponent component, EdgeDir edgeDir) getHexTuple(IHex hex, EdgeDir edgeDir)
+        {
+            return (
+            hex: hex,
+            component: hex.HexComponent as HexComponent,
+            edgeDir: edgeDir
+            );
+        }
+
+        private (Dictionary<Adjacent, Dir> adjacentDirs, Dir lDir, Dir rDir, bool hasLeftBridge) getEdgeStitchProperties(HexComponent hexComponent, EdgeDir edgeDir)
         {
             (Dictionary<Adjacent, Dir> adjacentDirs, Dir lDir, Dir rDir, bool hasLeftBridge) properties;
 
@@ -260,47 +309,52 @@ namespace Game.WorldBuilder
             return properties;
         }
 
-        private void placeBridgeEdgeOnBoard(Adjacent adjacent, int planeVersion, Bridge bridge, IHexComponent hexComponent, EdgeDir edgeDir, Dir dir, Bridge otherBridge)
+        private void placeEdgeStitchOnBoard(IHexComponent hexComponent, EdgeDir edgeDir, int rotationCount, float yPos,
+            StitchElevation stitchElevation,
+            int planeVersion,
+            int leftBridgeVersion,
+            int leftPlaneVersion,
+            int oppositeBridgeVersion,
+            int rightPlaneVersion,
+            int rightBridgeVersion,
+            int version
+        )
         {
-            var bridgeEdgePrefab = HexParts.GetBridgeEdge(
-                adjacent,
-                bridge.SlopeDir, bridge.Elevation,
-                bridge.Version,
+            var edgeStitchPrefab = HexParts.GetEdgeStitch(
+                stitchElevation,
                 planeVersion,
-                otherBridge.SlopeDir, otherBridge.Elevation,
-                otherBridge.Version
+                leftBridgeVersion,
+                leftPlaneVersion,
+                oppositeBridgeVersion,
+                rightPlaneVersion,
+                rightBridgeVersion,
+                version
             );
-            var name = BridgeEdge.CreateBridgeEdgeName(
-                adjacent,
-                bridge.SlopeDir, bridge.Elevation,
-                bridge.Version,
-                planeVersion,
-                otherBridge.SlopeDir, otherBridge.Elevation,
-                otherBridge.Version,
-                0
-            );
-            Debug.Log("name: " + name
-                + " on for { dir: " + dir + ", edgeDir: " + edgeDir + ", go: " + hexComponent.Transform.gameObject.name);
-            //try
-            //{
-            var go = Instantiate(bridgeEdgePrefab.Model, hexComponent.Transform);
-            go.transform.eulerAngles = HexUtils.GetBridgeEdgeRotationByCoord(edgeDir);
-            go.name = go.name.Replace("(Clone)", "_[" + (adjacent == Adjacent.Left ? "L" : "R") + "_" + dir.ToString() + "]");
-            //}
-            //catch (Exception e)
-            //{
-            //    var name = BridgeEdge.CreateBridgeEdgeName(adjacent, planeVersion, bridge.SlopeDir, bridge.Elevation, bridge.Version);
 
-            //    Debug.LogWarning("Can't find " + name
-            //        + " on for { dir: " + dir + ", edgeDir: " + edgeDir + ", go: " + hexComponent.Transform.gameObject.name + " => " + e.Message);
-            //}
+            try
+            {
+                var helperGo = new GameObject(edgeDir.ToString() + "_helper");
+                helperGo.transform.SetParent(hexComponent.Transform);
+                helperGo.transform.localPosition = Vector3.zero;
+                helperGo.transform.localEulerAngles = HexUtils.GetBridgeEdgeRotationByCoord(edgeDir);
+
+                var go = Instantiate(edgeStitchPrefab.Model, helperGo.transform);
+                go.transform.localPosition = HexUtils.EDGE_STITCH_POSITION[EdgeDir.N];
+                go.transform.position = new Vector3(go.transform.position.x, yPos, go.transform.position.z);
+                go.transform.localEulerAngles = HexUtils.GetEdgeStitchRotationByCoord(edgeDir, rotationCount);
+                go.name = go.name.Replace("(Clone)", "");
+            }
+            catch (Exception e)
+            {
+                var name = EdgeStitch.CreateEdgeStitchName(stitchElevation, planeVersion, leftBridgeVersion, leftPlaneVersion, oppositeBridgeVersion, rightPlaneVersion, rightBridgeVersion, version);
+                Debug.LogWarning("name: " + name + ", go: " + hexComponent.Transform.gameObject.name + " => " + e.Message);
+            }
         }
 
         private void createFirstHex()
         {
             _currentBuilderHexId++;
-            var hex = new Hex(_currentBuilderHexId, MiddleCoord);
-            hex.Elevation = 1;
+            var hex = new Hex(_currentBuilderHexId, MiddleCoord, 1);
 
             Hexes.AddHex(hex);
             OnEdgeHexes.Enqueue(new Coord(hex.Y, hex.X));
@@ -372,12 +426,13 @@ namespace Game.WorldBuilder
             }
             Debug.Log("filteredCombinations.Count: " + filteredCombinations.Count);
 
+            var s = "";
             foreach (var combination in filteredCombinations)
             {
-                Debug.Log("combination: " + combination[0] + ", " + combination[1] + ", " + combination[2]);
+                s += "new int[3] { " + combination[0] + ", " + combination[1] + ", " + combination[2] + " }\n";
+                //s += "" + combination[0] + ", " + combination[1] + ", " + combination[2];
             }
-
-            throw new Exception();
+            Debug.Log("combinations: " + s);
         }
     }
 }

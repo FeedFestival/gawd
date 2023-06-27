@@ -18,17 +18,17 @@ namespace Game.Shared.DataModels
         //public Transform Transform { get { return (HexComponent as HexComponent).transform; } }
 
         public Hex() { }
-        public Hex(int id, ICoord coord)
+        public Hex(int id, ICoord coord, int elevation)
         {
-            setProperties(id, coord.Y, coord.X);
+            setProperties(id, coord.Y, coord.X, elevation);
         }
         //public Hex(int id, Coord coord)
         //{
         //    setProperties(id, coord.Y, coord.X);
         //}
-        public Hex(int id, int y, int x)
+        public Hex(int id, int y, int x, int elevation)
         {
-            setProperties(id, y, x);
+            setProperties(id, y, x, elevation);
         }
 
         
@@ -40,12 +40,13 @@ namespace Game.Shared.DataModels
             HexComponent?.AddNeighbor(dir, newNeighborCoord, id);
         }
 
-        private void setProperties(int id, int y, int x)
+        private void setProperties(int id, int y, int x, int elevation)
         {
             ID = id;
             Y = y;
             X = x;
             Neighbors = new Dictionary<Dir, ICoord>();
+            Elevation = elevation;
         }
     }
 }

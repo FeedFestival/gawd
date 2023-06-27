@@ -236,6 +236,17 @@ namespace Game.Shared.Utils
             },
         };
 
+
+        public static readonly Dictionary<EdgeDir, Vector3> EDGE_STITCH_POSITION = new Dictionary<EdgeDir, Vector3>()
+        {
+            { EdgeDir.NE, new Vector3(VERTICAL_ADJACENT___OFFSET, 0, 0.5f) },
+            { EdgeDir.SE, new Vector3(VERTICAL_ADJACENT___OFFSET, 0, -0.5f) },
+            { EdgeDir.S, new Vector3(0, 0, -1) },
+            { EdgeDir.SW, new Vector3(-VERTICAL_ADJACENT___OFFSET, 0, -0.5f) },
+            { EdgeDir.NW, new Vector3(-VERTICAL_ADJACENT___OFFSET, 0, 0.5f) },
+            { EdgeDir.N, new Vector3(0, 0, 1) },
+        };
+
         public static SlopeDir Opposite(SlopeDir slopeDir)
         {
             if (slopeDir == SlopeDir.LEVEL) { return slopeDir; }
@@ -328,9 +339,35 @@ namespace Game.Shared.Utils
             return new Vector3(0, ((int)dir + 1) * 60f, 0);
         }
 
-        public static Vector3 GetBridgeEdgeRotationByCoord(EdgeDir dir)
+        public static Vector3 GetBridgeEdgeRotationByCoord(EdgeDir edgeDir)
         {
-            return new Vector3(0, ((int)dir) * 60f, 0);
+            return new Vector3(0, ((int)edgeDir) * 60f, 0);
+        }
+
+        public static Vector3 GetEdgeStitchRotationByCoord(EdgeDir dir, int rotationCount)
+        {
+            //float additionalRotY = 0f;
+            //switch (dir)
+            //{
+            //    case EdgeDir.N:
+            //        break;
+            //    case EdgeDir.NE:
+            //        additionalRotY = 240;
+            //        break;
+            //    case EdgeDir.SE:
+            //        break;
+            //    case EdgeDir.S:
+            //        additionalRotY = 120;
+            //        break;
+            //    case EdgeDir.SW:
+            //        break;
+            //    case EdgeDir.NW:
+            //    default:
+            //        additionalRotY = 300;
+            //        break;
+            //}
+
+            return new Vector3(0, rotationCount * -120, 0);
         }
 
         public static SlopeDir GetSlopeDir(int elevation, int neighborElevation)

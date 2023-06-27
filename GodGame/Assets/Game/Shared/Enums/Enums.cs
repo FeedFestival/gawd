@@ -10,9 +10,9 @@ namespace Game.Shared.Enums
         Left, Right
     }
 
-    public enum DirAdjacent
+    public enum DirWay
     {
-        Left, Center, Right
+        Origin, Left, Right
     }
 
     public enum Dir

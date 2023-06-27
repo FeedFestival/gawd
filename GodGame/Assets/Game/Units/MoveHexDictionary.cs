@@ -96,7 +96,7 @@ namespace Game.UnitController
                 ? HexUtils.ODD__NEIGHBORS_COORDS_OF_DIR[dir]
                 : HexUtils.EVEN_NEIGHBORS_COORDS_OF_DIR[dir];
 
-            var neighborDirCoord = neighborAdjacentCoords[(int)DirAdjacent.Center];
+            var neighborDirCoord = neighborAdjacentCoords[(int)DirWay.Left];
             var dirCoord = neighborDirCoord.Coord.Plus(curCoord);
             bool exists = moveHexes.MoveHexExist(dirCoord);
             if (exists)
@@ -104,7 +104,7 @@ namespace Game.UnitController
                 neighbors.TryAdd(neighborDirCoord.PerspectiveDir, curCoord);
             }
 
-            neighborDirCoord = neighborAdjacentCoords[(int)DirAdjacent.Left];
+            neighborDirCoord = neighborAdjacentCoords[(int)DirWay.Origin];
             var coord = neighborDirCoord.Coord.Plus(curCoord);
             exists = moveHexes.MoveHexExist(coord);
             if (exists)
@@ -114,7 +114,7 @@ namespace Game.UnitController
                 moveHexes[coord.Y][coord.X].Neighbors.TryAdd(oppositeDir, dirCoord);
             }
 
-            neighborDirCoord = neighborAdjacentCoords[(int)DirAdjacent.Right];
+            neighborDirCoord = neighborAdjacentCoords[(int)DirWay.Right];
             coord = neighborDirCoord.Coord.Plus(curCoord);
             exists = moveHexes.MoveHexExist(coord);
             if (exists)

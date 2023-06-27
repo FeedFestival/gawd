@@ -30,61 +30,32 @@ MonoBehaviour:
     Elevation: 1
     Version: 0
     Model: {fileID: 919132149155446097, guid: 24d881484e6eda14dae42658b6625cbf, type: 3}
-  BridgeEdgesGos:
-  - {fileID: 919132149155446097, guid: 337f9fa2616f77d4d9f11f81323d1524, type: 3}
-  - {fileID: 919132149155446097, guid: 068fa0fe721bd2a468051b2986a7a000, type: 3}
-  - {fileID: 919132149155446097, guid: 371128af523c8b94e8201a5e231346c0, type: 3}
-  - {fileID: 919132149155446097, guid: 4d6e644e48ddedb43a0a394c58a44b8d, type: 3}
-  - {fileID: 919132149155446097, guid: bdf0826be3623f1458412140975448da, type: 3}
-  - {fileID: 919132149155446097, guid: 0afc06ccbe4a419499ee046a9f2d46c4, type: 3}
-  BridgeEdges:
-  - Adjacent: 1
-    SlopeDir: 2
-    Elevation: 0
-    BridgeVersion: 0
-    OtherEdge_SlopeDir: 2
-    OtherEdge_Elevation: 0
-    OtherBridgeEdge_Version: 0
+  EdgeStitchGos:
+  - {fileID: 919132149155446097, guid: 7a5d8ddd4b2bf5f4fb6239d079afdf4c, type: 3}
+  - {fileID: 919132149155446097, guid: 9eb6383a04b67794db72a9f1894d0abb, type: 3}
+  - {fileID: 919132149155446097, guid: c39feb5fa0ae0d94f92c9767fdb65647, type: 3}
+  EdgeStitches:
+  - StitchElevation:
+      Me: 0
+      Left: 0
+      Right: 0
     PlaneVersion: 0
+    LeftBridgeVersion: 0
+    LeftPlaneVersion: 0
+    OppositeBridgeVersion: 0
+    RightPlaneVersion: 0
+    RightBridgeVersion: 0
     Version: 0
-    Model: {fileID: 919132149155446097, guid: 337f9fa2616f77d4d9f11f81323d1524, type: 3}
-  - Adjacent: 0
-    SlopeDir: 2
-    Elevation: 0
-    BridgeVersion: 0
-    OtherEdge_SlopeDir: 2
-    OtherEdge_Elevation: 0
-    OtherBridgeEdge_Version: 0
+    Model: {fileID: 919132149155446097, guid: 7a5d8ddd4b2bf5f4fb6239d079afdf4c, type: 3}
+  - StitchElevation:
+      Me: 0
+      Left: 0
+      Right: 1
     PlaneVersion: 0
+    LeftBridgeVersion: 0
+    LeftPlaneVersion: 0
+    OppositeBridgeVersion: 0
+    RightPlaneVersion: 0
+    RightBridgeVersion: 0
     Version: 0
-    Model: {fileID: 919132149155446097, guid: 068fa0fe721bd2a468051b2986a7a000, type: 3}
-  - Adjacent: 0
-    SlopeDir: 1
-    Elevation: 1
-    BridgeVersion: 0
-    OtherEdge_SlopeDir: 1
-    OtherEdge_Elevation: 1
-    OtherBridgeEdge_Version: 0
-    PlaneVersion: 0
-    Version: 0
-    Model: {fileID: 919132149155446097, guid: 371128af523c8b94e8201a5e231346c0, type: 3}
-  - Adjacent: 1
-    SlopeDir: 1
-    Elevation: 1
-    BridgeVersion: 0
-    OtherEdge_SlopeDir: 1
-    OtherEdge_Elevation: 1
-    OtherBridgeEdge_Version: 0
-    PlaneVersion: 0
-    Version: 0
-    Model: {fileID: 919132149155446097, guid: 4d6e644e48ddedb43a0a394c58a44b8d, type: 3}
-  - Adjacent: 0
-    SlopeDir: 2
-    Elevation: 0
-    BridgeVersion: 0
-    OtherEdge_SlopeDir: 0
-    OtherEdge_Elevation: 1
-    OtherBridgeEdge_Version: 0
-    PlaneVersion: 0
-    Version: 0
-    Model: {fileID: 919132149155446097, guid: bdf0826be3623f1458412140975448da, type: 3}
+    Model: {fileID: 919132149155446097, guid: 9eb6383a04b67794db72a9f1894d0abb, type: 3}
