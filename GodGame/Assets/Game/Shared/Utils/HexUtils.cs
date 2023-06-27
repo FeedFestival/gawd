@@ -1,6 +1,7 @@
 using Game.Shared.DataModels;
 using Game.Shared.Enums;
 using Game.Shared.Interfaces;
+using Game.Shared.Structs;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace Game.Shared.Utils
         public const float VERTICAL_ADJACENT___OFFSET = 0.8660254f;
         public const float HORIZONTAL_ADJACENT_OFFSET = 1.7320508f;
 
-        public static Dictionary<Dir, Vector3> DIR_NEW_POSITION = new Dictionary<Dir, Vector3>()
+        public static readonly Dictionary<Dir, Vector3> DIR_NEW_POSITION = new Dictionary<Dir, Vector3>()
         {
             { Dir.NE, new Vector3(0, 0, HORIZONTAL_ADJACENT_OFFSET) },
             { Dir.E, new Vector3(ROW_Y_______________OFFSET, 0, VERTICAL_ADJACENT___OFFSET) },
@@ -25,25 +26,25 @@ namespace Game.Shared.Utils
             { Dir.NW, new Vector3(-ROW_Y_______________OFFSET, 0, VERTICAL_ADJACENT___OFFSET) }
         };
 
-        public static Dictionary<Dir, Hex.Coord> COORD_ODD__OFFSET = new Dictionary<Dir, Hex.Coord>()
+        public static readonly Dictionary<Dir, ICoord> COORD_ODD__OFFSET = new Dictionary<Dir, ICoord>()
         {
-            { Dir.NE, new Hex.Coord(1, 0) },
-            { Dir.E, new Hex.Coord(0, 1) },
-            { Dir.SE, new Hex.Coord(-1, 0) },
-            { Dir.SW, new Hex.Coord(-1, -1) },
-            { Dir.W, new Hex.Coord(0, -1) },
-            { Dir.NW, new Hex.Coord(1, -1) }
+            { Dir.NE, new Coord(1, 0) },
+            { Dir.E, new Coord(0, 1) },
+            { Dir.SE, new Coord(-1, 0) },
+            { Dir.SW, new Coord(-1, -1) },
+            { Dir.W, new Coord(0, -1) },
+            { Dir.NW, new Coord(1, -1) }
         };
-        public static Dictionary<Dir, Hex.Coord> COORD_EVEN_OFFSET = new Dictionary<Dir, Hex.Coord>()
+        public static readonly Dictionary<Dir, ICoord> COORD_EVEN_OFFSET = new Dictionary<Dir, ICoord>()
         {
-            { Dir.NE, new Hex.Coord(1, 1) },
-            { Dir.E, new Hex.Coord(0, 1) },
-            { Dir.SE, new Hex.Coord(-1, 1) },
-            { Dir.SW, new Hex.Coord(-1, 0) },
-            { Dir.W, new Hex.Coord(0, -1) },
-            { Dir.NW, new Hex.Coord(1, 0) }
+            { Dir.NE, new Coord(1, 1) },
+            { Dir.E, new Coord(0, 1) },
+            { Dir.SE, new Coord(-1, 1) },
+            { Dir.SW, new Coord(-1, 0) },
+            { Dir.W, new Coord(0, -1) },
+            { Dir.NW, new Coord(1, 0) }
         };
-        public static Dictionary<Hex.Coord, Dir> ODD__OFFSET_TO_DIR = new Dictionary<Hex.Coord, Dir>()
+        public static readonly Dictionary<ICoord, Dir> ODD__OFFSET_TO_DIR = new Dictionary<ICoord, Dir>()
         {
             { COORD_ODD__OFFSET[Dir.NE], Dir.NE },
             { COORD_ODD__OFFSET[Dir.E], Dir.E },
@@ -52,7 +53,7 @@ namespace Game.Shared.Utils
             { COORD_ODD__OFFSET[Dir.W], Dir.W },
             { COORD_ODD__OFFSET[Dir.NW], Dir.NW }
         };
-        public static Dictionary<Hex.Coord, Dir> EVEN_OFFSET_TO_DIR = new Dictionary<Hex.Coord, Dir>()
+        public static readonly Dictionary<ICoord, Dir> EVEN_OFFSET_TO_DIR = new Dictionary<ICoord, Dir>()
         {
             { COORD_EVEN_OFFSET[Dir.NE], Dir.NE },
             { COORD_EVEN_OFFSET[Dir.E], Dir.E },
@@ -62,10 +63,10 @@ namespace Game.Shared.Utils
             { COORD_EVEN_OFFSET[Dir.NW], Dir.NW }
         };
 
-        public static Dir[] DIRECTIONS = new Dir[6] { Dir.NE, Dir.E, Dir.SE, Dir.SW, Dir.W, Dir.NW };
-        public static Dir[] DIRECTIONS_REVERSED = new Dir[6] { Dir.NW, Dir.W, Dir.SW, Dir.SE, Dir.E, Dir.NE };
+        public static readonly Dir[] DIRECTIONS = new Dir[6] { Dir.NE, Dir.E, Dir.SE, Dir.SW, Dir.W, Dir.NW };
+        public static readonly Dir[] DIRECTIONS_REVERSED = new Dir[6] { Dir.NW, Dir.W, Dir.SW, Dir.SE, Dir.E, Dir.NE };
 
-        public static Dictionary<Dir, Dir> OPPOSITE_DIR = new Dictionary<Dir, Dir>()
+        public static readonly Dictionary<Dir, Dir> OPPOSITE_DIR = new Dictionary<Dir, Dir>()
         {
             { Dir.NE, Dir.SW },
             { Dir.E, Dir.W },
@@ -75,111 +76,111 @@ namespace Game.Shared.Utils
             { Dir.NW, Dir.SE }
         };
 
-        public static Dictionary<Dir, NeighborAdjacentCoord[]> ODD__NEIGHBORS_COORDS_OF_DIR = new Dictionary<Dir, NeighborAdjacentCoord[]>()
+        public static readonly Dictionary<Dir, NeighborAdjacentCoord[]> ODD__NEIGHBORS_COORDS_OF_DIR = new Dictionary<Dir, NeighborAdjacentCoord[]>()
         {
             {
                 Dir.NE,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.W, new Hex.Coord(1, -1)),
-                    new NeighborAdjacentCoord(Dir.SW, new Hex.Coord(1, 0)),
-                    new NeighborAdjacentCoord(Dir.SE, new Hex.Coord(0, 1))
+                    new NeighborAdjacentCoord(Dir.W, new Coord(1, -1)),
+                    new NeighborAdjacentCoord(Dir.SW, new Coord(1, 0)),
+                    new NeighborAdjacentCoord(Dir.SE, new Coord(0, 1))
                 }
             },
             {
                 Dir.E,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.NW, new Hex.Coord(1, 0)),
-                    new NeighborAdjacentCoord(Dir.W, new Hex.Coord(0, 1)),
-                    new NeighborAdjacentCoord(Dir.SW, new Hex.Coord(-1, 0))
+                    new NeighborAdjacentCoord(Dir.NW, new Coord(1, 0)),
+                    new NeighborAdjacentCoord(Dir.W, new Coord(0, 1)),
+                    new NeighborAdjacentCoord(Dir.SW, new Coord(-1, 0))
                 }
             },
             {
                 Dir.SE,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.NE, new Hex.Coord(0, 1)),
-                    new NeighborAdjacentCoord(Dir.NW, new Hex.Coord(-1, 0)),
-                    new NeighborAdjacentCoord(Dir.W, new Hex.Coord(-1, -1))
+                    new NeighborAdjacentCoord(Dir.NE, new Coord(0, 1)),
+                    new NeighborAdjacentCoord(Dir.NW, new Coord(-1, 0)),
+                    new NeighborAdjacentCoord(Dir.W, new Coord(-1, -1))
                 }
             },
             {
                 Dir.SW,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.E, new Hex.Coord(-1, 0)),
-                    new NeighborAdjacentCoord(Dir.NE, new Hex.Coord(-1, -1)),
-                    new NeighborAdjacentCoord(Dir.NW, new Hex.Coord(0, -1))
+                    new NeighborAdjacentCoord(Dir.E, new Coord(-1, 0)),
+                    new NeighborAdjacentCoord(Dir.NE, new Coord(-1, -1)),
+                    new NeighborAdjacentCoord(Dir.NW, new Coord(0, -1))
                 }
             },
             {
                 Dir.W,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.SE, new Hex.Coord(-1, -1)),
-                    new NeighborAdjacentCoord(Dir.E, new Hex.Coord(0, -1)),
-                    new NeighborAdjacentCoord(Dir.NE, new Hex.Coord(1, -1))
+                    new NeighborAdjacentCoord(Dir.SE, new Coord(-1, -1)),
+                    new NeighborAdjacentCoord(Dir.E, new Coord(0, -1)),
+                    new NeighborAdjacentCoord(Dir.NE, new Coord(1, -1))
                 }
             },
             {
                 Dir.NW,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.SW, new Hex.Coord(0, -1)),
-                    new NeighborAdjacentCoord(Dir.SE, new Hex.Coord(1, -1)),
-                    new NeighborAdjacentCoord(Dir.E, new Hex.Coord(1, 0))
+                    new NeighborAdjacentCoord(Dir.SW, new Coord(0, -1)),
+                    new NeighborAdjacentCoord(Dir.SE, new Coord(1, -1)),
+                    new NeighborAdjacentCoord(Dir.E, new Coord(1, 0))
                 }
             },
         };
-        public static Dictionary<Dir, NeighborAdjacentCoord[]> EVEN_NEIGHBORS_COORDS_OF_DIR = new Dictionary<Dir, NeighborAdjacentCoord[]>()
+        public static readonly Dictionary<Dir, NeighborAdjacentCoord[]> EVEN_NEIGHBORS_COORDS_OF_DIR = new Dictionary<Dir, NeighborAdjacentCoord[]>()
         {
             {
                 Dir.NE,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.W, new Hex.Coord(1, 0)),
-                    new NeighborAdjacentCoord(Dir.SW, new Hex.Coord(1, 1)),
-                    new NeighborAdjacentCoord(Dir.SE, new Hex.Coord(0, 1))
+                    new NeighborAdjacentCoord(Dir.W, new Coord(1, 0)),
+                    new NeighborAdjacentCoord(Dir.SW, new Coord(1, 1)),
+                    new NeighborAdjacentCoord(Dir.SE, new Coord(0, 1))
                 }
             },
             {
                 Dir.E,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.NW, new Hex.Coord(1, 1)),
-                    new NeighborAdjacentCoord(Dir.W, new Hex.Coord(0, 1)),
-                    new NeighborAdjacentCoord(Dir.SW, new Hex.Coord(-1, 1))
+                    new NeighborAdjacentCoord(Dir.NW, new Coord(1, 1)),
+                    new NeighborAdjacentCoord(Dir.W, new Coord(0, 1)),
+                    new NeighborAdjacentCoord(Dir.SW, new Coord(-1, 1))
                 }
             },
             {
                 Dir.SE,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.NE, new Hex.Coord(0, 1)),
-                    new NeighborAdjacentCoord(Dir.NW, new Hex.Coord(-1, 1)),
-                    new NeighborAdjacentCoord(Dir.W, new Hex.Coord(-1, 0))
+                    new NeighborAdjacentCoord(Dir.NE, new Coord(0, 1)),
+                    new NeighborAdjacentCoord(Dir.NW, new Coord(-1, 1)),
+                    new NeighborAdjacentCoord(Dir.W, new Coord(-1, 0))
                 }
             },
             {
                 Dir.SW,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.E, new Hex.Coord(-1, 1)),
-                    new NeighborAdjacentCoord(Dir.NE, new Hex.Coord(-1, 0)),
-                    new NeighborAdjacentCoord(Dir.NW, new Hex.Coord(0, -1))
+                    new NeighborAdjacentCoord(Dir.E, new Coord(-1, 1)),
+                    new NeighborAdjacentCoord(Dir.NE, new Coord(-1, 0)),
+                    new NeighborAdjacentCoord(Dir.NW, new Coord(0, -1))
                 }
             },
             {
                 Dir.W,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.SE, new Hex.Coord(-1, 0)),
-                    new NeighborAdjacentCoord(Dir.E, new Hex.Coord(0, -1)),
-                    new NeighborAdjacentCoord(Dir.NE, new Hex.Coord(1, 0))
+                    new NeighborAdjacentCoord(Dir.SE, new Coord(-1, 0)),
+                    new NeighborAdjacentCoord(Dir.E, new Coord(0, -1)),
+                    new NeighborAdjacentCoord(Dir.NE, new Coord(1, 0))
                 }
             },
             {
                 Dir.NW,
                 new NeighborAdjacentCoord[3] {
-                    new NeighborAdjacentCoord(Dir.SW, new Hex.Coord(0, -1)),
-                    new NeighborAdjacentCoord(Dir.SE, new Hex.Coord(1, 0)),
-                    new NeighborAdjacentCoord(Dir.E, new Hex.Coord(1, 1))
+                    new NeighborAdjacentCoord(Dir.SW, new Coord(0, -1)),
+                    new NeighborAdjacentCoord(Dir.SE, new Coord(1, 0)),
+                    new NeighborAdjacentCoord(Dir.E, new Coord(1, 1))
                 }
             },
         };
 
-        public static EdgeDir[] EDGE_DIRECTIONS = new EdgeDir[6] { EdgeDir.NE, EdgeDir.SE, EdgeDir.S, EdgeDir.SW, EdgeDir.NW, EdgeDir.N };
-        public static Dictionary<EdgeDir, EdgeDir> LEFT_OPPOSITE_EDGE_DIR = new Dictionary<EdgeDir, EdgeDir>()
+        public static readonly EdgeDir[] EDGE_DIRECTIONS = new EdgeDir[6] { EdgeDir.NE, EdgeDir.SE, EdgeDir.S, EdgeDir.SW, EdgeDir.NW, EdgeDir.N };
+        public static readonly Dictionary<EdgeDir, EdgeDir> LEFT_OPPOSITE_EDGE_DIR = new Dictionary<EdgeDir, EdgeDir>()
         {
             { EdgeDir.NE, EdgeDir.S },
             { EdgeDir.SE, EdgeDir.SW },
@@ -189,7 +190,7 @@ namespace Game.Shared.Utils
             { EdgeDir.N, EdgeDir.SE },
         };
 
-        public static Dictionary<EdgeDir, Dictionary<Adjacent, Dir>> ADJACENT_DIR_OF_EDGE_DIR = new Dictionary<EdgeDir, Dictionary<Adjacent, Dir>>()
+        public static readonly Dictionary<EdgeDir, Dictionary<Adjacent, Dir>> ADJACENT_DIR_OF_EDGE_DIR = new Dictionary<EdgeDir, Dictionary<Adjacent, Dir>>()
         {
             {
                 EdgeDir.N, new Dictionary<Adjacent, Dir>()
@@ -249,16 +250,16 @@ namespace Game.Shared.Utils
         public struct NeighborAdjacentCoord
         {
             public Dir PerspectiveDir;
-            public Hex.Coord Coord;
+            public Coord Coord;
 
-            public NeighborAdjacentCoord(Dir dir, Hex.Coord coord)
+            public NeighborAdjacentCoord(Dir dir, Coord coord)
             {
                 PerspectiveDir = dir;
                 Coord = coord;
             }
         }
 
-        public static Hex.Coord GetCoordOffset(bool isOddRow, Dir dir)
+        public static ICoord GetCoordOffset(bool isOddRow, Dir dir)
         {
             return isOddRow ? COORD_ODD__OFFSET[dir] : COORD_EVEN_OFFSET[dir];
         }

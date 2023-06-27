@@ -71,7 +71,7 @@ public class HexMapGenerator : MonoBehaviour
         ////hex.SetNeighborTerrain(Hex.MIRROR_POLE[coord.Pole], currentHex.HexTerrain);
         //currentHex.Neighbors[(int)coord.Pole] = HexTerrain.Flat;
 
-        //_hexUnsetEdge.Enqueue(new Hex.Coord() { Y = y, X = x });
+        //_hexUnsetEdge.Enqueue(new Coord() { Y = y, X = x });
         //addToHexes(hex);
     }
 
@@ -85,7 +85,7 @@ public class HexMapGenerator : MonoBehaviour
         //_hexes[hex.Y].Add(hex.X, hex);
     }
 
-    //private Vector3 getNewPositionAddition(Hex.Coord coord)
+    //private Vector3 getNewPositionAddition(Coord coord)
     //{
     //    return EVEN_POLE_POSITION[coord.Pole];
     //}
@@ -105,7 +105,7 @@ public class HexMapGenerator : MonoBehaviour
     //}
 
     // TODO: this is broken now, fix it !!!!
-    //private Hex.Coord getUnsetNeighborCoords(ref HexComponent currentHex)
+    //private Coord getUnsetNeighborCoords(ref HexComponent currentHex)
     //{
     //    var coord = currentHex.GetUnsetNeighborCoords();
 

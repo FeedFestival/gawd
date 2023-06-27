@@ -56,7 +56,7 @@ namespace Game.WorldBuilder
         //    X = x;
         //}
 
-        //internal Hex.Coord? GetUnsetNeighborCoords()
+        //internal Coord? GetUnsetNeighborCoords()
         //{
         //    int index = GetUnsetIndex();
 
@@ -109,7 +109,7 @@ namespace Game.WorldBuilder
         //    return X % 2 == 0;
         //}
 
-        //private void setNeighborsTerrain(Dictionary<int, Dictionary<int, HexComponent>> hexes, Dictionary<Dir, Hex.Coord> poleCoords)
+        //private void setNeighborsTerrain(Dictionary<int, Dictionary<int, HexComponent>> hexes, Dictionary<Dir, Coord> poleCoords)
         //{
         //    int y, x;
         //    foreach (var kvp in poleCoords)

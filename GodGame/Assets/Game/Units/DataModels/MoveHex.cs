@@ -1,27 +1,50 @@
 using Game.Shared.Enums;
+using Game.Shared.Interfaces;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.UnitController
 {
-    public class MoveHex : MonoBehaviour//, IHexCoord
+    public interface IMoveHex : IHexCoord
+    {
+        float G { get; }
+        float H { get; }
+        float F { get; }
+        bool IsInitialized { get; set; }
+        IMoveHex Connection { get; }
+        bool Available { get; }
+        bool Walkable { get; }
+        Transform Transform { get; }
+
+        ICoords Coords { get; set; }
+        float GetDistance(IMoveHex other);
+
+        void SetAvailable(bool available);
+        void SetConnection(IMoveHex nodeBase);
+        void ResetPathfinding();
+        void SetG(float g);
+        void SetH(float h);
+    }
+
+    public class MoveHex : MonoBehaviour, IMoveHex//, IHexCoord
     {
         public int Y { get; set; }
         public int X { get; set; }
-        public Dictionary<Dir, ICoord> Neighbors;
+        public Dictionary<Dir, ICoord> Neighbors { get; set; }
         // Center Move Hex
-        public bool IsInitialized;
+        public bool IsInitialized { get; set; }
 
         //-------------------
-        public MoveHex Connection { get; private set; }
+        public IMoveHex Connection { get; private set; }
         public float G { get; private set; }
         public float H { get; private set; }
         public float F => G + H;
-        public ICoords Coords;
-        public float GetDistance(MoveHex other) => Coords.GetDistance(other.Coords); // Helper to reduce noise in pathfinding
+        public ICoords Coords { get; set; }
+        public float GetDistance(IMoveHex other) => Coords.GetDistance(other.Coords); // Helper to reduce noise in pathfinding
         public bool Walkable { get; private set; }
         public bool Available { get; internal set; }
+        public Transform Transform { get { return transform; } }
 
         public Action<int, int> RequestPath;
         public Action<int, int> ConfirmDestination;
@@ -56,7 +79,7 @@ namespace Game.UnitController
         }
 
         //
-        public void SetConnection(MoveHex nodeBase)
+        public void SetConnection(IMoveHex nodeBase)
         {
             Connection = nodeBase;
         }
@@ -64,13 +87,11 @@ namespace Game.UnitController
         public void SetG(float g)
         {
             G = g;
-            //SetText();
         }
 
         public void SetH(float h)
         {
             H = h;
-            //SetText();
         }
 
         public void ResetPathfinding()

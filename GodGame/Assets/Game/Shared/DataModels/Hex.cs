@@ -22,79 +22,16 @@ namespace Game.Shared.DataModels
         {
             setProperties(id, coord.Y, coord.X);
         }
-        public Hex(int id, Coord coord)
-        {
-            setProperties(id, coord.Y, coord.X);
-        }
+        //public Hex(int id, Coord coord)
+        //{
+        //    setProperties(id, coord.Y, coord.X);
+        //}
         public Hex(int id, int y, int x)
         {
             setProperties(id, y, x);
         }
 
-        [System.Serializable]
-        public struct Coord : ICoord
-        {
-            public int Y { get; set; }
-            public int X { get; set; }
-
-            public Coord(int y, int x)
-            {
-                Y = y;
-                X = x;
-            }
-
-            public Coord(Coord coord)
-            {
-                Y = coord.Y;
-                X = coord.X;
-            }
-
-            public override string ToString()
-            {
-                return Y + "_" + X;
-            }
-
-            public Coord Plus(ICoord hexCoord)
-            {
-                Y = Y + hexCoord.Y;
-                X = X + hexCoord.X;
-                return this;
-            }
-
-            public Coord Plus(Coord hexCoord)
-            {
-                Y = Y + hexCoord.Y;
-                X = X + hexCoord.X;
-                return this;
-            }
-
-            internal Coord Minus(Coord hexCoord)
-            {
-                Y = Y - hexCoord.Y;
-                X = X - hexCoord.X;
-                return this;
-            }
-
-            internal void Reset()
-            {
-                Y = 0;
-                X = 0;
-            }
-
-            public static Coord AddTogheter(ICoord a, ICoord b)
-            {
-                return new Coord(a.Y + b.Y, a.X + b.X);
-            }
-
-            public static Coord AddTogheter(Coord a, Coord b)
-            {
-                return new Coord(a.Y + b.Y, a.X + b.X);
-            }
-            public static Coord Minus(Coord to, Coord from)
-            {
-                return new Coord(to.Y - from.Y, to.X - from.X);
-            }
-        }
+        
 
         public void AddNeighbor(Dir dir, ICoord newNeighborCoord, int id)
         {

@@ -1,21 +1,21 @@
-using Game.Shared.DataModels;
 using Game.Shared.Enums;
+using Game.Shared.Interfaces;
+using Game.Shared.Structs;
 using Game.Shared.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Game.UnitController
 {
     public class Pathfinding
     {
-        public List<MoveHex> AllHexes;
-        public Dictionary<int, Dictionary<int, MoveHex>> MoveHexes;
-        public Hex.Coord CurBuildCoord;
-        public Queue<Hex.Coord> MoveHexesEdge;
+        public List<IMoveHex> AllHexes;
+        public Dictionary<int, Dictionary<int, IMoveHex>> MoveHexes;
+        public ICoord CurBuildCoord;
+        public Queue<ICoord> MoveHexesEdge;
 
-        public List<Hex.Coord> Path;
+        public List<ICoord> Path;
         public ICoord From;
         public ICoord To;
 
@@ -23,9 +23,9 @@ namespace Game.UnitController
 
         public Pathfinding()
         {
-            AllHexes = new List<MoveHex>();
-            MoveHexes = new Dictionary<int, Dictionary<int, MoveHex>>();
-            MoveHexesEdge = new Queue<Hex.Coord>();
+            AllHexes = new List<IMoveHex>();
+            MoveHexes = new Dictionary<int, Dictionary<int, IMoveHex>>();
+            MoveHexesEdge = new Queue<ICoord>();
         }
 
         /// <summary>
@@ -35,10 +35,10 @@ namespace Game.UnitController
         ///
         /// Also, setting colors and text on each hex affects performance, so removing that will also improve it marginally.
         /// </summary>
-        public static List<Hex.Coord> FindPath(MoveHex startNode, MoveHex targetNode, ref Dictionary<int, Dictionary<int, MoveHex>> moveHexes)
+        public static List<ICoord> FindPath(IMoveHex startNode, IMoveHex targetNode, ref Dictionary<int, Dictionary<int, IMoveHex>> moveHexes)
         {
-            var toSearch = new List<MoveHex>() { startNode };
-            var processed = new List<MoveHex>();
+            var toSearch = new List<IMoveHex>() { startNode };
+            var processed = new List<IMoveHex>();
 
             while (toSearch.Any())
             {
@@ -58,11 +58,11 @@ namespace Game.UnitController
                 if (current == targetNode)
                 {
                     var currentPathTile = targetNode;
-                    var path = new List<Hex.Coord>();
+                    var path = new List<ICoord>();
                     var count = 100;
                     while (currentPathTile != startNode)
                     {
-                        path.Add(new Hex.Coord(currentPathTile.Y, currentPathTile.X));
+                        path.Add(new Coord(currentPathTile.Y, currentPathTile.X));
                         currentPathTile = currentPathTile.Connection;
                         count--;
                         if (count < 0) throw new Exception();
@@ -70,7 +70,7 @@ namespace Game.UnitController
                     return path;
                 }
 
-                var moveHexNeighbors = new List<MoveHex>();
+                var moveHexNeighbors = new List<IMoveHex>();
                 foreach (var neighbor in current.Neighbors)
                 {
                     var moveHexNeighbor = moveHexes[neighbor.Value.Y][neighbor.Value.X];
@@ -108,7 +108,7 @@ namespace Game.UnitController
         {
             foreach (var hx in AllHexes)
             {
-                hx.gameObject.SetActive(false);
+                hx.Transform.gameObject.SetActive(false);
             }
         }
 
@@ -116,11 +116,11 @@ namespace Game.UnitController
         {
             foreach (var hx in AllHexes)
             {
-                hx.gameObject.SetActive(true);
+                hx.Transform.gameObject.SetActive(true);
             }
         }
 
-        public List<Hex.Coord> FormatPath(List<Hex.Coord> path, ICoord startCoord)
+        public List<ICoord> FormatPath(List<ICoord> path, ICoord startCoord)
         {
             From = startCoord;
             path.Reverse();
@@ -133,15 +133,15 @@ namespace Game.UnitController
             return path;
         }
 
-        public List<Hex.Coord> ApplyPathToWorld(List<Hex.Coord> path)
+        public List<ICoord> ApplyPathToWorld(List<ICoord> path)
         {
-            if (Path == null) { Path = new List<Hex.Coord>(); }
+            if (Path == null) { Path = new List<ICoord>(); }
             
             Path.Clear();
             foreach (var p in path)
             {
                 Path.Add(
-                    Hex.Coord.AddTogheter(From, p)
+                    Coord.AddTogheter(From, p)
                 );
             }
             To = Path[Path.Count - 1];
@@ -149,7 +149,7 @@ namespace Game.UnitController
             return Path;
         }
 
-        private List<Hex.Coord> transformEvenPathToOdd(List<Hex.Coord> path)
+        private List<ICoord> transformEvenPathToOdd(List<ICoord> path)
         {
             Dir dir;
             if (path.Count == 1)
@@ -161,8 +161,8 @@ namespace Game.UnitController
             }
 
             RowIs rowIs;
-            var newPath = new List<Hex.Coord>();
-            var decomposedPath = new List<(RowIs fromRow, Hex.Coord usedCoord, RowIs rowIs, Dir dir)>();
+            var newPath = new List<ICoord>();
+            var decomposedPath = new List<(RowIs fromRow, ICoord usedCoord, RowIs rowIs, Dir dir)>();
             for (int i = 0; i < path.Count; i++)
             {
                 if (i == 0)
@@ -180,7 +180,7 @@ namespace Game.UnitController
                 }
 
                 var fromRow = decomposedPath[i - 1].rowIs;
-                var usedCoord = Hex.Coord.Minus(path[i], path[i - 1]);
+                var usedCoord = Coord.Difference(path[i], path[i - 1]);
                 rowIs = usedCoord.Y == 0
                     ? fromRow
                     : HexUtils.Opposite(fromRow);
@@ -193,7 +193,7 @@ namespace Game.UnitController
                     rowIs: rowIs,
                     dir: dir
                 ));
-                var newCoord = Hex.Coord.AddTogheter(newPath[i - 1], fromRow == RowIs.Even
+                var newCoord = Coord.AddTogheter(newPath[i - 1], fromRow == RowIs.Even
                     ? HexUtils.COORD_ODD__OFFSET[dir]
                     : HexUtils.COORD_EVEN_OFFSET[dir]
                 );
@@ -207,7 +207,7 @@ namespace Game.UnitController
         {
             foreach (var hex in AllHexes)
             {
-                if (hex.Available) { hex.gameObject.SetActive(true); }
+                if (hex.Available) { hex.Transform.gameObject.SetActive(true); }
             }
         }
 

@@ -1,5 +1,6 @@
 using DG.Tweening;
-using Game.Shared.DataModels;
+using Game.Shared.Interfaces;
+using Game.Shared.Structs;
 using Game.Shared.Utils;
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace Game.UnitController
         private Subject<int> _moveSubject__s = new Subject<int>();
 
         private const float MOVE_DURATION = 0.3f;
-        public static Hex.Coord COORD_ZERO = new Hex.Coord(0, 0);
+        public static Coord COORD_ZERO = new Coord(0, 0);
 
         private void Awake()
         {
@@ -118,7 +119,7 @@ namespace Game.UnitController
             if (_pathfinding.AllHexes[0].IsInitialized == false)
             {
                 _pathfinding.AllHexes[0].IsInitialized = true;
-                _pathfinding.AllHexes[0].transform.position = _currentUnit.transform.position;
+                _pathfinding.AllHexes[0].Transform.position = _currentUnit.transform.position;
             }
 
             _showAvailablePathSubject__s.OnNext(_currentUnit.CurrentEnergy);
@@ -172,7 +173,7 @@ namespace Game.UnitController
             _moveSubject__s.OnNext(0);
         }
 
-        private void showPath(List<Hex.Coord> path)
+        private void showPath(List<ICoord> path)
         {
             for (int i = 0; i < path.Count; i++)
             {
@@ -208,7 +209,7 @@ namespace Game.UnitController
 
                 var isOddRow = HexUtils.IsOddRow(curMoveHex.Y);
                 var offset = HexUtils.GetCoordOffset(isOddRow, dir);
-                var newNeighborCoord = offset.Plus(_pathfinding.CurBuildCoord);
+                var newNeighborCoord = Coord.AddTogheter(offset, _pathfinding.CurBuildCoord);
 
                 var moveHex = createMoveHex(newNeighborCoord);
                 moveHex.RequestPath += requestPath;
@@ -232,7 +233,7 @@ namespace Game.UnitController
             var isNewTurn = _pathfinding.From == null;
             if (isNewTurn)
             {
-                oldPos = _pathfinding.AllHexes[0].transform.position;
+                oldPos = _pathfinding.AllHexes[0].Transform.position;
                 newPos = HexUtils.GetHexPosition(_currentUnit.Coord);
             }
             else
@@ -245,11 +246,11 @@ namespace Game.UnitController
 
             foreach (var hex in _pathfinding.AllHexes)
             {
-                hex.transform.position = hex.transform.position + offset;
+                hex.Transform.position = hex.Transform.position + offset;
             }
         }
 
-        private MoveHex createMoveHex(Hex.Coord coord)
+        private MoveHex createMoveHex(ICoord coord)
         {
             return createMoveHex(coord.Y, coord.X);
         }
@@ -305,7 +306,7 @@ namespace Game.UnitController
             }
         }
 
-        private Vector3 getPathfindingPos(Hex.Coord coord, int elevation = 0)
+        private Vector3 getPathfindingPos(ICoord coord, int elevation = 0)
         {
             return HexUtils.GetHexPosition(_currentUnit.Coord) + HexUtils.GetHexPosition(coord, elevation);
         }

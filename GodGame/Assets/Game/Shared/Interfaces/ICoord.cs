@@ -1,5 +1,8 @@
-public interface ICoord
+namespace Game.Shared.Interfaces
 {
-    int Y { get; set; }
-    int X { get; set; }
+    public interface ICoord
+    {
+        int Y { get; set; }
+        int X { get; set; }
+    }
 }

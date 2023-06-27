@@ -1,6 +1,7 @@
 using Game.Shared.DataModels;
 using Game.Shared.Enums;
 using Game.Shared.Interfaces;
+using Game.Shared.Structs;
 using Game.Shared.Utils;
 using System;
 using System.Collections.Generic;
@@ -29,7 +30,7 @@ namespace Game.WorldBuilder
         public void PreSetup()
         {
             // Civ 6 gives an big map of 66/106 (h/w)
-            MiddleCoord = new Hex.Coord(66 / 2, 106 / 2);
+            MiddleCoord = new Coord(66 / 2, 106 / 2);
             _curBuildCoord = MiddleCoord;
             Hexes = new Dictionary<int, Dictionary<int, IHex>>();
             OnEdgeHexes = new Queue<ICoord>();
@@ -55,12 +56,13 @@ namespace Game.WorldBuilder
 
                         var isOddRow = HexUtils.IsOddRow(hex.Y);
                         var offset = HexUtils.GetCoordOffset(isOddRow, dir);
-                        var newNeighborCoord = offset.Plus(_curBuildCoord);
+                        var newNeighborCoord = Coord.AddTogheter(offset, _curBuildCoord);
+                        Debug.Log("newNeighborCoord: " + newNeighborCoord);
 
                         _currentBuilderHexId++;
                         var newHex = new Hex(_currentBuilderHexId, newNeighborCoord.Y, newNeighborCoord.X);
                         Hexes.AddHex(newHex);
-                        OnEdgeHexes.Enqueue(new Hex.Coord(newHex.Y, newHex.X));
+                        OnEdgeHexes.Enqueue(new Coord(newHex.Y, newHex.X));
 
                         placeHexOnBoard(newHex);
 
@@ -301,7 +303,7 @@ namespace Game.WorldBuilder
             hex.Elevation = 1;
 
             Hexes.AddHex(hex);
-            OnEdgeHexes.Enqueue(new Hex.Coord(hex.Y, hex.X));
+            OnEdgeHexes.Enqueue(new Coord(hex.Y, hex.X));
 
             placeHexOnBoard(hex);
         }

@@ -1,4 +1,4 @@
-using Game.Shared.DataModels;
+using Game.Shared.Interfaces;
 using Game.Shared.Utils;
 using System;
 using UnityEngine;

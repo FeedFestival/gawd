@@ -1,4 +1,3 @@
-using Game.Shared.DataModels;
 using Game.Shared.Interfaces;
 using System.Collections.Generic;
 using UnityEngine;
