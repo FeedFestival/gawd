@@ -27,14 +27,18 @@ namespace Game.WorldBuilder
         private int _currentBuilderHexId = 0;
         private List<ICoord> _justAdded;
 
+        private Action<List<ICoord>> _onNewEdgesDiscoveredRef;
+
         private Subject<int> _discoverAdjacent__s = new Subject<int>();
         private Subject<int> _buildAdjacentBridges__s = new Subject<int>();
         private Subject<int> _buildAdjacentEdges__s = new Subject<int>();
 
         private int _frameDelay = 10;
 
-        public void PreSetup()
+        public void PreSetup(Action<List<ICoord>> onNewEdgesDiscovered)
         {
+            _onNewEdgesDiscoveredRef = onNewEdgesDiscovered;
+
             // Civ 6 gives an big map of 66/106 (h/w)
             MiddleCoord = new Coord(66 / 2, 106 / 2);
             _curBuildCoord = MiddleCoord;
@@ -53,6 +57,8 @@ namespace Game.WorldBuilder
                     i++;
                     if (i == _justAdded.Count)
                     {
+                        _onNewEdgesDiscoveredRef?.Invoke(_justAdded);
+
                         _buildAdjacentEdges__s.OnNext(0);
                         return;
                     }
@@ -93,7 +99,7 @@ namespace Game.WorldBuilder
 
         public void DiscoverWorld(int visionRange)
         {
-            int hexCount = HexUtils.GetHexCountByRange(visionRange);
+            int hexCount = HexUtils.GetHexCountByRange(visionRange + 2);
             _discoverAdjacent__s.OnNext(hexCount);
         }
 
@@ -360,6 +366,8 @@ namespace Game.WorldBuilder
             OnEdgeHexes.Enqueue(new Coord(hex.Y, hex.X));
 
             placeHexOnBoard(hex);
+
+
         }
 
         private void placeHexOnBoard(IHex hex)

@@ -5,6 +5,7 @@ using Game.Shared.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Game.UnitController
 {
@@ -13,7 +14,7 @@ namespace Game.UnitController
         public List<IMoveHex> AllHexes;
         public Dictionary<int, Dictionary<int, IMoveHex>> MoveHexes;
         public ICoord CurBuildCoord;
-        public Queue<ICoord> MoveHexesEdge;
+        public Queue<ICoord> OnEdgeHexes;
 
         public List<ICoord> Path;
         public ICoord From;
@@ -25,7 +26,7 @@ namespace Game.UnitController
         {
             AllHexes = new List<IMoveHex>();
             MoveHexes = new Dictionary<int, Dictionary<int, IMoveHex>>();
-            MoveHexesEdge = new Queue<ICoord>();
+            OnEdgeHexes = new Queue<ICoord>();
         }
 
         /// <summary>
@@ -104,6 +105,35 @@ namespace Game.UnitController
             return null;
         }
 
+        internal List<Vector3> GetEdgePoints()
+        {
+            var allPoints = new List<Vector3>();
+            foreach (var onEdgeHex in OnEdgeHexes)
+            {
+                foreach (var dir in HexUtils.DIRECTIONS)
+                {
+                    var hasNeighbor = MoveHexes[onEdgeHex.Y][onEdgeHex.X].Neighbors.ContainsKey(dir);
+                    var edgeDirList = new List<EdgeDir>();
+                    if (!hasNeighbor)
+                    {
+                        var edgeDirs = HexUtils.ADJACENT_EDGE_DIR_OF_DIR[dir];
+                        foreach (var edgeDir in edgeDirs)
+                        {
+                            if (!edgeDirList.Contains(edgeDir))
+                            {
+                                var pos = MoveHexes[onEdgeHex.Y][onEdgeHex.X].Transform.position + HexUtils.EDGE_STITCH_POSITION[edgeDir];
+                                allPoints.Add(pos);
+                            }
+                        }
+                    }
+                }
+            }
+            allPoints = VectorUtils.RemoveClosePoints(allPoints, 0.1f);
+
+            return VectorUtils.SortPointsCounterClockwise(allPoints);
+            //return VectorUtils.SortPoints(allPoints);
+        }
+
         internal void HideHexPath()
         {
             foreach (var hx in AllHexes)
@@ -136,7 +166,7 @@ namespace Game.UnitController
         public List<ICoord> ApplyPathToWorld(List<ICoord> path)
         {
             if (Path == null) { Path = new List<ICoord>(); }
-            
+
             Path.Clear();
             foreach (var p in path)
             {
@@ -228,6 +258,11 @@ namespace Game.UnitController
             {
                 hex.ResetPathfinding();
             }
+        }
+
+        public Mesh CreateMesh(List<Vector3> vertices)
+        {
+            return Triangulator.CreateConcaveHullMesh(vertices);
         }
     }
 }

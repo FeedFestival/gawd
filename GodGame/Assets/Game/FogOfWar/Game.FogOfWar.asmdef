@@ -1,0 +1,19 @@
+{
+    "name": "Game.FogOfWar",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d1b0f1e6a1720b74cb2f401fb375d43f",
+        "GUID:17ce0b0e4be955a44a292841115600c4",
+        "GUID:c6622b6f6100f804aafb6e599865eac9",
+        "GUID:bb46f2e54068bc94cb6ef2a1f1871b41"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -4,6 +4,7 @@ using System;
 using Game.WorldBuilder;    // rename to World
 using Game.UnitController;
 using Game.TurnController;
+using Game.FogOfWar;
 
 namespace Game.Start
 {
@@ -16,6 +17,8 @@ namespace Game.Start
         [SerializeField]
         private UnitController.UnitController _unitController;
         [SerializeField]
+        private FogOfWarController _fogOfWarController;
+        [SerializeField]
         private UnitsManager _unitsManager;
 
         private Subject<bool> _startSubject__s = new Subject<bool>();
@@ -24,26 +27,35 @@ namespace Game.Start
         {
             _startSubject__s
                 .Delay(TimeSpan.FromMilliseconds(100))
-                .Do((bool _) =>
+                .Do(_ =>
                 {
                 // _unitsManager.PreSetup();
                 _turnController.NextTurnCallback += nextTurn;
-                    _worldBuilder.PreSetup();
+                    _fogOfWarController.PreSetup();
+                    _worldBuilder.PreSetup(_fogOfWarController.OnNewEdgesDiscovered);
                     _unitController.PreSetup();
                 })
                 .Delay(TimeSpan.FromMilliseconds(100))
-                .Do((bool _) =>
+                .Do(_ =>
                 {
                     _unitsManager.Init(_worldBuilder.MiddleCoord);
                     _worldBuilder.Init();
+                    _fogOfWarController.Init(_worldBuilder.MiddleCoord);
                     _unitController.Init();
                 })
                 .Delay(TimeSpan.FromMilliseconds(100))
-                .Do((bool _) =>
+                .Select(_ =>
                 {
                     var unit = _unitsManager.GetUnitTurn();
                     _worldBuilder.DiscoverWorld(unit.VisionRange);
                     _unitController.StartTurn(unit);
+
+                    return unit;
+                })
+                .Delay(TimeSpan.FromMilliseconds(2000))
+                .Do(unit =>
+                {
+                    _fogOfWarController.RemoveFog(unit.Coord, unit.VisionRange);
                 })
                 .Subscribe();
         }

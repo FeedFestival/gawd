@@ -4,6 +4,7 @@ using Game.Shared.Structs;
 using Game.Shared.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 
@@ -13,8 +14,15 @@ namespace Game.UnitController
     {
         [SerializeField]
         private UnitControllerSettingsSO _unitControllerSettings;
-        //[Header("Props")]
+        [Header("Props")]
+        [SerializeField]
+        private BezierCurve _bezierCurve;
+        [SerializeField]
+        private LineRenderer _lineRenderer;
+        [SerializeField]
+        private MeshFilter _meshFilter;
         private UnitComponent _currentUnit;
+        private RoundPathCreator _pathCreator;
         private CameraController _cameraController;
         private Subject<int> _showAvailablePathSubject__s = new Subject<int>();
 
@@ -94,6 +102,27 @@ namespace Game.UnitController
                 .Do((bool createdAnew) =>
                 {
                     _pathfinding.ShowAvailableMoveHexes();
+
+                    var points = _pathfinding.GetEdgePoints();
+
+                    //_pathCreator.CreateBezierPath(points, ref _bezierCurve);
+
+                    //var bezierPoints = _bezierCurve.GetAnchorPoints();
+                    //var evenPoints = _pathCreator.GetEvenlyDistributedPoints(bezierPoints.ToList());
+
+                    //_lineRenderer.positionCount = evenPoints.Count;
+                    //_lineRenderer.SetPositions(evenPoints.ToArray());
+
+                    //evenPoints.Reverse();
+
+                    if (_meshFilter.gameObject.activeSelf)
+                    {
+                        _meshFilter.mesh = _pathfinding.CreateMesh(points);
+                    }
+                })
+                .DelayFrame(10)
+                .Do((bool createdAnew) =>
+                {
                 })
                 .Subscribe();
         }
@@ -101,6 +130,7 @@ namespace Game.UnitController
         public void PreSetup()
         {
             _pathfinding = new Pathfinding();
+            _pathCreator = new RoundPathCreator();
 
             _cameraController = Camera.main.GetComponent<CameraController>();
         }
@@ -200,7 +230,7 @@ namespace Game.UnitController
                 var hasAllNeighbors = curMoveHex.Neighbors.Count == 6;
                 if (hasAllNeighbors)
                 {
-                    _pathfinding.CurBuildCoord = _pathfinding.MoveHexesEdge.GetEdgeCoord(ref _pathfinding.MoveHexes);
+                    _pathfinding.CurBuildCoord = _pathfinding.OnEdgeHexes.GetEdgeCoord(ref _pathfinding.MoveHexes);
                     i--;
                     continue;
                 }
@@ -218,7 +248,7 @@ namespace Game.UnitController
 
                 _pathfinding.AllHexes.Add(moveHex);
                 _pathfinding.MoveHexes.AddMoveHex(moveHex);
-                _pathfinding.MoveHexesEdge.Enqueue(newNeighborCoord);
+                _pathfinding.OnEdgeHexes.Enqueue(newNeighborCoord);
 
                 curMoveHex.Neighbors.Add(dir, newNeighborCoord);
                 _pathfinding.MoveHexes[newNeighborCoord.Y][newNeighborCoord.X].Neighbors
@@ -265,7 +295,7 @@ namespace Game.UnitController
             return moveHex;
         }
 
-        
+
 
         private void preparePathDots(int count)
         {

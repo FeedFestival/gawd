@@ -236,6 +236,27 @@ namespace Game.Shared.Utils
             },
         };
 
+        public static readonly Dictionary<Dir, EdgeDir[]> ADJACENT_EDGE_DIR_OF_DIR = new Dictionary<Dir, EdgeDir[]>()
+        {
+            {
+                Dir.NE, new EdgeDir[2] { EdgeDir.N, EdgeDir.NE }
+            },
+            {
+                Dir.E, new EdgeDir[2] { EdgeDir.NE, EdgeDir.SE }
+            },
+            {
+                Dir.SE, new EdgeDir[2] { EdgeDir.SE, EdgeDir.S }
+            },
+            {
+                Dir.SW, new EdgeDir[2] { EdgeDir.S, EdgeDir.SW }
+            },
+            {
+                Dir.W, new EdgeDir[2] { EdgeDir.SW, EdgeDir.NW }
+            },
+            {
+                Dir.NW, new EdgeDir[2] { EdgeDir.NW, EdgeDir.N }
+            },
+        };
 
         public static readonly Dictionary<EdgeDir, Vector3> EDGE_STITCH_POSITION = new Dictionary<EdgeDir, Vector3>()
         {
@@ -245,6 +266,14 @@ namespace Game.Shared.Utils
             { EdgeDir.SW, new Vector3(-VERTICAL_ADJACENT___OFFSET, 0, -0.5f) },
             { EdgeDir.NW, new Vector3(-VERTICAL_ADJACENT___OFFSET, 0, 0.5f) },
             { EdgeDir.N, new Vector3(0, 0, 1) },
+        };
+
+        public static readonly Dictionary<int, Vector3> RAY_FOG_OFFSETS = new Dictionary<int, Vector3>()
+        {
+            { 0, new Vector3(0, 0, 0.666667f) },
+            { 1, new Vector3(0.288675f, 0, 0.166667f) },
+            { 2, new Vector3(0, 0, -0.666667f) },
+            { 3, new Vector3(-0.288675f, 0, -0.166667f) },
         };
 
         public static SlopeDir Opposite(SlopeDir slopeDir)
@@ -346,27 +375,6 @@ namespace Game.Shared.Utils
 
         public static Vector3 GetEdgeStitchRotationByCoord(EdgeDir dir, int rotationCount)
         {
-            //float additionalRotY = 0f;
-            //switch (dir)
-            //{
-            //    case EdgeDir.N:
-            //        break;
-            //    case EdgeDir.NE:
-            //        additionalRotY = 240;
-            //        break;
-            //    case EdgeDir.SE:
-            //        break;
-            //    case EdgeDir.S:
-            //        additionalRotY = 120;
-            //        break;
-            //    case EdgeDir.SW:
-            //        break;
-            //    case EdgeDir.NW:
-            //    default:
-            //        additionalRotY = 300;
-            //        break;
-            //}
-
             return new Vector3(0, rotationCount * -120, 0);
         }
 
